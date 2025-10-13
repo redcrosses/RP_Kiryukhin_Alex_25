@@ -96,8 +96,8 @@ def draw_start_screen(surface):
     # Instructions
     draw_text(surface, "Press SPACE to Start", WIDTH // 2, HEIGHT // 2, font_medium, WHITE)
     draw_text(surface, "Use Arrow Keys to Move", WIDTH // 2, HEIGHT // 2 + 60, font_small, GRAY)
-    draw_text(surface, "Eat Red Food to Grow", WIDTH // 2, HEIGHT // 2 + 100, font_small, GRAY)
-    draw_text(surface, "Don't Hit Yourself!", WIDTH // 2, HEIGHT // 2 + 140, font_small, GRAY)
+    draw_text(surface, "Score by eating red food", WIDTH // 2, HEIGHT // 2 + 100, font_small, GRAY)
+    draw_text(surface, "and don't hit yourself!", WIDTH // 2, HEIGHT // 2 + 140, font_small, GRAY)
 
 def draw_game_over_screen(surface, score, high_score):
     surface.fill(BLACK)
@@ -121,10 +121,11 @@ def draw_game_over_screen(surface, score, high_score):
 def main():
     game_state = START
     snake = None
-    food = None
+    food = []
     score = 0
     high_score = 0
     running = True
+    time = 0
     
     while running:
         for event in pygame.event.get():
@@ -135,7 +136,7 @@ def main():
                     if event.key == pygame.K_SPACE:
                         # Start new game
                         snake = Snake()
-                        food = Food(snake.positions)
+                        food.append(Food(snake.positions))
                         score = 0
                         game_state = PLAYING
                     elif event.key == pygame.K_ESCAPE:
@@ -155,7 +156,7 @@ def main():
                     if event.key == pygame.K_SPACE:
                         # Restart game
                         snake = Snake()
-                        food = Food(snake.positions)
+                        food = []
                         score = 0
                         game_state = PLAYING
                     elif event.key == pygame.K_ESCAPE:
@@ -169,25 +170,32 @@ def main():
                     high_score = score
                 game_state = GAME_OVER
             
-            # Check if snake ate food
-            if snake.positions[0] == food.position:
-                snake.grow = True
-                score += 10
-                food = Food(snake.positions)
+            # check collisions with food
+            for i, f in enumerate(food):
+                if snake.positions[0] == f.position:
+                    snake.grow = True
+                    score += 10
+                    food.pop(i)
         
         # Draw everything
         if game_state == START:
             draw_start_screen(screen)
         elif game_state == PLAYING:
+            #add more food every 20 ticks
+            if time % 20 == 0:
+                food.append(Food(snake.positions))
+
             screen.fill(BLACK)
             snake.draw(screen)
-            food.draw(screen)
+            for f in food:
+                f.draw(screen)
             draw_text(screen, f"Score: {score}", 60, 20, font_small)
             if high_score > 0:
                 draw_text(screen, f"High: {high_score}", WIDTH - 60, 20, font_small, GRAY)
         elif game_state == GAME_OVER:
             draw_game_over_screen(screen, score, high_score)
         
+        time += 1
         pygame.display.flip()
         clock.tick(FPS if game_state == PLAYING else 60)
     
