@@ -35,6 +35,12 @@ class ControlNode:
                 msg.data = "LEFT"
             elif key == 'd':
                 msg.data = "RIGHT"
+            elif key == '1':
+                msg.data = "1"
+            elif key == '2':
+                msg.data = "2"
+            elif key == '3':
+                msg.data = "3"
             elif key == 'q':
                 rospy.loginfo("CONTROL_NODE: quit key pressed.")
                 break

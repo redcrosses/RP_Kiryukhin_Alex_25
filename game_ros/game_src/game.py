@@ -31,6 +31,7 @@ class Snake:
         self.positions = [(GRID_WIDTH // 2, GRID_HEIGHT // 2)]
         self.direction = (1, 0)
         self.grow = False
+        self.eaten = 0
     
     def move(self):
         head_x, head_y = self.positions[0]
@@ -114,6 +115,7 @@ class Game:
         self.running = True
         self.high_score = 0
         self.reset()
+        self.difficulty = 1
 
     def reset(self):
         self.game_state = "PLAYING"   # only PLAYING / GAME_OVER for ROS
@@ -139,6 +141,13 @@ class Game:
                 self.snake.change_direction((-1, 0))
             elif cmd == "RIGHT":
                 self.snake.change_direction((1, 0))
+            elif cmd == '1':
+                self.difficulty = 1
+            elif cmd == '2':
+                self.difficulty = 2
+            elif cmd == '3':
+                self.difficulty = 3
+            
 
         # Optional: allow restart when game over
         if self.game_state == "GAME_OVER" and cmd == "SPACE":
@@ -159,9 +168,11 @@ class Game:
                 # Check collisions with food
                 for i, f in enumerate(self.food):
                     if self.snake.positions[0] == f.position:
-                        self.snake.grow = True
-                        self.score += 10
-                        self.food.pop(i)
+                        self.eaten += 1
+                        if self.snake.eaten >= self.difficulty:
+                            self.snake.grow = True
+                            self.score += 10
+                            self.food.pop(i)
 
                 # Add more food every 20 ticks
                 if self.time % 20 == 0:
@@ -177,6 +188,7 @@ class Game:
             for f in self.food:
                 f.draw(screen)
             draw_text(screen, f"Score: {self.score}", 60, 20, font_small)
+            draw_text(screen, f"Score: {self.difficulty}", 60, 40, font_small)
             if self.high_score > 0:
                 draw_text(screen, f"High: {self.high_score}", WIDTH - 60, 20, font_small, GRAY)
         elif self.game_state == "GAME_OVER":
@@ -211,6 +223,12 @@ def main():
                     game.handle_command("LEFT")
                 elif event.key == pygame.K_RIGHT:
                     game.handle_command("RIGHT")
+                elif event.key == pygame.K_1:
+                    game.handle_command("1")
+                elif event.key == pygame.K_2:
+                    game.handle_command("2")
+                elif event.key == pygame.K_3:
+                    game.handle_command("3")
                 elif event.key == pygame.K_ESCAPE:
                     game.handle_command("QUIT")
 
