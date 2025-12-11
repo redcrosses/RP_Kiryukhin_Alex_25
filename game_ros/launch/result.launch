@@ -1,0 +1,3 @@
+<launch>
+<node pkg='game_ros' type='result_game.py' name='result' output='screen'/>
+</launch>

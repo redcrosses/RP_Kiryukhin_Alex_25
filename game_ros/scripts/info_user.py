@@ -10,6 +10,7 @@ class InfoUserNode:
         self.serv = rospy.Service("difficulty", SetGameDifficulty, self.gameDifficulty)
         
     def run(self):
+        rospy.sleep(1)
         rospy.loginfo("INFO_USER: Requesting user info...")
 
         name = input("Enter your full name: ")
