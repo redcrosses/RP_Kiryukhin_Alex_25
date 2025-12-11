@@ -15,8 +15,12 @@ FPS = 10
 # Colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-RED = (255, 0, 0)
 GRAY = (100, 100, 100)
+
+RED = (255, 0, 0)
+PURPLE = (128, 0, 255)
+BLUE = (0, 0, 255)
+
 
 # Initialize screen (module-level so ROS and standalone share it)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -55,11 +59,10 @@ class Snake:
         if (direction[0] * -1, direction[1] * -1) != self.direction:
             self.direction = direction
     
-    def draw(self, surface):
+    def draw(self, surface, color):        
         for i, pos in enumerate(self.positions):
             x, y = pos
             rect = pygame.Rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE)
-            color = (255, 0, 255) if i == 0 else (122, 0, 122)
             pygame.draw.rect(surface, color, rect)
             pygame.draw.rect(surface, BLACK, rect, 1)
 
@@ -116,6 +119,7 @@ class Game:
         self.high_score = 0
         self.reset()
         self.difficulty = 1
+        self.color_param = 'red'
 
     def reset(self):
         self.game_state = "PLAYING"   # only PLAYING / GAME_OVER for ROS
@@ -167,15 +171,17 @@ class Game:
             else:
                 # Check collisions with food
                 for i, f in enumerate(self.food):
-                    if self.snake.positions[0] == f.position:
-                        self.eaten += 1
-                        if self.snake.eaten >= self.difficulty:
-                            self.snake.grow = True
-                            self.score += 10
-                            self.food.pop(i)
+                    if self.snake.positions[0] == f.position: #collision
+                        self.snake.eaten += 1
+                        self.food.pop(i)
+                
+                if self.snake.eaten >= self.difficulty:
+                    self.snake.grow = True
+                    self.score += 10
+                    self.snake.eaten = 0
 
                 # Add more food every 20 ticks
-                if self.time % 20 == 0:
+                if self.time % (10*self.difficulty) == 0:
                     self.food.append(Food(self.snake.positions))
 
         self.time += 1
@@ -184,11 +190,16 @@ class Game:
         """Draw one frame."""
         if self.game_state == "PLAYING":
             screen.fill(BLACK)
-            self.snake.draw(screen)
+            if self.color_param == 'red': color = RED
+            elif self.color_param == 'purple': color = PURPLE
+            elif self.color_param == 'blue': color = BLUE
+            else: color = GRAY
+            self.snake.draw(screen, color=color)
             for f in self.food:
                 f.draw(screen)
             draw_text(screen, f"Score: {self.score}", 60, 20, font_small)
-            draw_text(screen, f"Score: {self.difficulty}", 60, 40, font_small)
+            draw_text(screen, f"Difficulty: {self.difficulty}", 70, 40, font_small)
+            draw_text(screen, f"Eaten: {self.snake.eaten}", 40, 60, font_small)
             if self.high_score > 0:
                 draw_text(screen, f"High: {self.high_score}", WIDTH - 60, 20, font_small, GRAY)
         elif self.game_state == "GAME_OVER":

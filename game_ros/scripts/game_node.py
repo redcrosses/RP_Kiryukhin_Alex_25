@@ -24,7 +24,6 @@ class GameNode:
                                          self.user_callback)
         self.control_sub = rospy.Subscriber("keyboard_control", String,
                                             self.control_callback)
-
         # Publisher for the final score
         self.result_pub = rospy.Publisher("result_information", Int64,
                                           queue_size=10)
@@ -33,9 +32,11 @@ class GameNode:
         self.player_info = None
         self.last_command = None
         self.phase = "WELCOME"   # WELCOME -> GAME -> FINAL
+        rospy.set_param("game_phase", self.phase)
 
         # Snake game instance
         self.game = Game()
+        rospy.set_param('change_player_color', 'red')
 
         rospy.loginfo("GAME_NODE: started.")
 
@@ -51,8 +52,13 @@ class GameNode:
     def welcome_phase(self):
         if self.player_info is not None:
             print(f"\nWelcome, {self.player_info.name} (@{self.player_info.username})!")
+            input("Press any key...")
             rospy.loginfo("GAME_NODE: switching to GAME phase.")
             self.phase = "GAME"
+            rospy.set_param("game_phase", self.phase)
+            diff_dict = {'easy':1, 'medium':2, 'hard':3}
+            diff = diff_dict[rospy.get_param('difficulty', default='easy')]
+            self.game.difficulty = diff
 
     def game_phase(self):
         # Pass command to the game, if we received one
@@ -60,6 +66,8 @@ class GameNode:
             self.game.handle_command(self.last_command)
             self.last_command = None
 
+        self.game.color_param = rospy.get_param('change_player_color', default='red')
+        
         # Advance Snake game and draw frame
         self.game.update()
         self.game.draw()
@@ -68,6 +76,7 @@ class GameNode:
         if self.game.is_over():
             rospy.loginfo("GAME_NODE: game over -> FINAL phase.")
             self.phase = "FINAL"
+            rospy.set_param("game_phase", self.phase)
 
     def final_phase(self):
         score = self.game.get_score()
