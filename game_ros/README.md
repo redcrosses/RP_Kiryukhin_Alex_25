@@ -24,7 +24,7 @@ It contains several ROS nodes that communicate using topics and a custom message
 - `/result_information` (`std_msgs/Int64`)
 
 ## How to build
-From your workspace:
+Copy the game_ros folder into your catkin workspace. Then, from your workspace:
 ```
 cd ~/catkin_ws
 catkin_make
@@ -41,3 +41,10 @@ source devel/setup.bash
 After filling in the required info(age, name etc), you can send commands (UP, DOWN, LEFT, RIGHT, QUIT) in the control node terminal.
 
 That's it.
+
+## How to run (using the launch files)
+1. in one terminal, run roslaunch game_ros game.launch
+2. in another terminal, run roslaunch game_ros control.launch
+3. in the third terminal, run roslaunch game_ros result.launch
+
+Fill in your user information in the first terminal and press any key to start the game. In the second terminal, you can send commands (UP, DOWN, LEFT, RIGHT) and in the third terminal you can see the saved game results.
