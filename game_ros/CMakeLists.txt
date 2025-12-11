@@ -56,6 +56,7 @@ add_message_files(
 add_service_files(
   FILES
   SetGameDifficulty.srv
+  GetUserScore.srv
 )
 
 ## Generate actions in the 'action' folder
